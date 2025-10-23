@@ -1,0 +1,23 @@
+{
+  "name": "async-programming-demo",
+  "version": "1.0.0",
+  "description": "A project demonstrating asynchronous programming patterns in TypeScript",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "callback": "npm run build && node dist/callbackVersion.js",
+    "promise": "npm run build && node dist/promiseVersion.js",
+    "async": "npm run build && node dist/asyncAwaitVersion.js",
+    "all": "npm run callback && npm run promise && npm run async"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.23"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

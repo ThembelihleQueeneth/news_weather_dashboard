@@ -3,11 +3,11 @@ import { WeatherData, NewsData, ApiConfig } from './types';
 
 const config: ApiConfig = {
   weather: {
-    baseUrl: 'api.openweathermap.org',
-    apiKey: '77a60f51032479c8f4f5798b0d55b95b'
+    baseUrl: 'https://home.openweathermap.org/',
+    apiKey: '2ad67a790461570038f7afd6f3d7c325'
   },
   news: {
-    baseUrl: 'dummyjson.com',
+    baseUrl: 'https://newsdata.io/',
     apiKey: 'pub_0d40228218204c23804674f825c2f150'
   }
 };
@@ -55,12 +55,12 @@ async function sequentialAsyncAwait(): Promise<void> {
   
   try {
     const weather = await fetchWeatherAsync(40.7128, -74.0060);
-    console.log('✓ Weather data received');
+    console.log(' Weather data received');
     console.log(`  Temperature: ${weather.current.temp}°C`);
     console.log(`  Condition: ${weather.current.weather[0].description}`);
     
     const news = await fetchNewsAsync();
-    console.log('✓ News data received');
+    console.log('  News data received');
     console.log(`  Total posts: ${news.posts.length}`);
     console.log('  Latest headlines:');
     news.posts.slice(0, 3).forEach((post, index) => {

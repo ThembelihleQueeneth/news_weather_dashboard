@@ -36,11 +36,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const https = __importStar(require("https"));
 const config = {
     weather: {
-        baseUrl: 'api.openweathermap.org',
-        apiKey: '77a60f51032479c8f4f5798b0d55b95b'
+        baseUrl: 'https://home.openweathermap.org/',
+        apiKey: '2ad67a790461570038f7afd6f3d7c325'
     },
     news: {
-        baseUrl: 'dummyjson.com',
+        baseUrl: 'https://newsdata.io/search-dashboard',
         apiKey: 'pub_0d40228218204c23804674f825c2f150'
     }
 };

@@ -36,15 +36,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const https = __importStar(require("https"));
 const config = {
     weather: {
-        baseUrl: 'api.openweathermap.org',
-        apiKey: '77a60f51032479c8f4f5798b0d55b95b'
+        baseUrl: 'https://home.openweathermap.org/',
+        apiKey: '2ad67a790461570038f7afd6f3d7c325'
     },
     news: {
-        baseUrl: 'dummyjson.com',
+        baseUrl: 'https://newsdata.io/',
         apiKey: 'pub_0d40228218204c23804674f825c2f150'
     }
 };
-function httpsGetPromise(url) {
+// Generic HTTPS GET request wrapped in a Promise
+function httpsGet(url) {
     return new Promise((resolve, reject) => {
         https.get(url, (response) => {
             let data = '';
@@ -64,92 +65,65 @@ function httpsGetPromise(url) {
         });
     });
 }
+// Fetch weather data using Promises
 function fetchWeatherPromise(lat, lon) {
     const weatherUrl = `https://${config.weather.baseUrl}/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${config.weather.apiKey}&units=metric`;
-    return httpsGetPromise(weatherUrl)
-        .then(data => JSON.parse(data));
+    return httpsGet(weatherUrl).then((data) => JSON.parse(data));
 }
+// Fetch news data using Promises
 function fetchNewsPromise() {
-    const newsUrl = `https://${config.news.baseUrl}/posts`;
-    return httpsGetPromise(newsUrl)
-        .then(data => JSON.parse(data));
+    const newsUrl = `https://${config.news.baseUrl}/api/1/news?apikey=${config.news.apiKey}&country=us`;
+    return httpsGet(newsUrl).then((data) => JSON.parse(data));
 }
-// Chain Promises for sequential execution
-function promiseChain() {
-    console.log('=== PROMISE CHAIN ===');
-    fetchWeatherPromise(40.7128, -74.0060)
-        .then(weather => {
-        console.log('✓ Weather data received');
+// Sequentially fetching data with Promises
+function sequentialPromises() {
+    console.log('=== SEQUENTIAL PROMISES ===');
+    return fetchWeatherPromise(40.7128, -74.0060)
+        .then((weather) => {
+        console.log('Weather Data:');
+        console.log(`  Location: ${weather.timezone}`);
         console.log(`  Temperature: ${weather.current.temp}°C`);
         console.log(`  Condition: ${weather.current.weather[0].description}`);
         return fetchNewsPromise();
     })
-        .then(news => {
-        console.log('✓ News data received');
-        console.log(`  Total posts: ${news.posts.length}`);
-        console.log('  Latest headlines:');
-        news.posts.slice(0, 3).forEach((post, index) => {
-            console.log(`    ${index + 1}. ${post.title}`);
+        .then((news) => {
+        console.log('\nNews Data:');
+        const newsResults = news.results || [];
+        console.log(`  Total Articles: ${newsResults.length}`);
+        newsResults.slice(0, 3).forEach((article, index) => {
+            console.log(`    ${index + 1}. ${article.title}`);
         });
+        console.log('=== END SEQUENTIAL PROMISES ===\n');
     })
-        .catch(error => {
-        console.error('Error in promise chain:', error.message);
-    })
-        .finally(() => {
-        console.log('=== END PROMISE CHAIN ===\n');
+        .catch((error) => {
+        console.error('Error:', error.message);
     });
 }
-function promiseAllDemo() {
-    console.log('=== PROMISE.ALL() DEMO ===');
-    const weatherPromise = fetchWeatherPromise(40.7128, -74.0060);
-    const newsPromise = fetchNewsPromise();
-    Promise.all([weatherPromise, newsPromise])
+// Parallel fetching using Promise.all
+function parallelPromises() {
+    console.log('=== PARALLEL PROMISES ===');
+    return Promise.all([
+        fetchWeatherPromise(40.7128, -74.0060),
+        fetchNewsPromise()
+    ])
         .then(([weather, news]) => {
-        console.log('✓ All data fetched simultaneously!');
-        console.log(`  Weather: ${weather.current.temp}°C`);
-        console.log(`  News posts: ${news.posts.length}`);
+        console.log('Weather Data:');
+        console.log(`  Location: ${weather.timezone}`);
+        console.log(`  Temperature: ${weather.current.temp}°C`);
+        console.log(`  Condition: ${weather.current.weather[0].description}`);
+        console.log('\nNews Data:');
+        const newsResults = news.results || [];
+        console.log(`  Total Articles: ${newsResults.length}`);
+        newsResults.slice(0, 3).forEach((article, index) => {
+            console.log(`    ${index + 1}. ${article.title}`);
+        });
+        console.log('=== END PARALLEL PROMISES ===\n');
     })
-        .catch(error => {
-        console.error('Error with Promise.all:', error.message);
-    })
-        .finally(() => {
-        console.log('=== END PROMISE.ALL() DEMO ===\n');
+        .catch((error) => {
+        console.error('Error:', error.message);
     });
 }
-function promiseRaceDemo() {
-    console.log('=== PROMISE.RACE() DEMO ===');
-    const weatherPromise = fetchWeatherPromise(40.7128, -74.0060);
-    const newsPromise = fetchNewsPromise();
-    const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout after 3 seconds')), 3000);
-    });
-    Promise.race([weatherPromise, newsPromise, timeoutPromise])
-        .then((firstResult) => {
-        console.log('✓ Fastest response received!');
-        if ('current' in firstResult) {
-            console.log('  Weather data arrived first');
-            console.log(`  Temperature: ${firstResult.current.temp}°C`);
-        }
-        else if ('posts' in firstResult) {
-            console.log('  News data arrived first');
-            console.log(`  Posts count: ${firstResult.posts.length}`);
-        }
-    })
-        .catch(error => {
-        console.error('Error with Promise.race:', error.message);
-    })
-        .finally(() => {
-        console.log('=== END PROMISE.RACE() DEMO ===\n');
-    });
-}
-// Execute promise examples
 if (require.main === module) {
     console.log('🚀 Starting Promise Version...\n');
-    promiseChain();
-    setTimeout(() => {
-        promiseAllDemo();
-    }, 1000);
-    setTimeout(() => {
-        promiseRaceDemo();
-    }, 2000);
+    sequentialPromises().then(() => setTimeout(() => parallelPromises(), 1000));
 }

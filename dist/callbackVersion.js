@@ -1,151 +1,72 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-const https = __importStar(require("https"));
-const config = {
-    weather: {
-        baseUrl: 'https://home.openweathermap.org/',
-        apiKey: '2ad67a790461570038f7afd6f3d7c325'
-    },
-    news: {
-        baseUrl: 'https://newsdata.io/search-dashboard',
-        apiKey: 'pub_0d40228218204c23804674f825c2f150'
-    }
-};
-function httpsGet(url, callback) {
-    https.get(url, (response) => {
-        let data = '';
-        response.on('data', (chunk) => {
-            data += chunk;
-        });
-        response.on('end', () => {
-            if (response.statusCode === 200) {
-                callback(null, data);
-            }
-            else {
-                callback(new Error(`HTTP ${response.statusCode}: ${data}`));
-            }
-        });
-    }).on('error', (error) => {
-        callback(error);
-    });
-}
+const apiClient_1 = require("./apiClient");
+const logger_1 = require("./logger");
+const config_1 = require("./config");
 // Fetch weather data using callbacks
 function fetchWeatherCallback(lat, lon, callback) {
-    const weatherUrl = `https://${config.weather.baseUrl}/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${config.weather.apiKey}&units=metric`;
-    httpsGet(weatherUrl, (error, data) => {
-        if (error) {
-            callback(error);
-            return;
-        }
-        try {
-            const weatherData = JSON.parse(data);
-            callback(null, weatherData);
-        }
-        catch (parseError) {
-            callback(parseError);
-        }
-    });
+    apiClient_1.weatherClient.get(config_1.config.weatherUrl(lat, lon))
+        .then(response => callback(null, response.data))
+        .catch(error => callback(error));
 }
 // Fetch news data using callbacks
 function fetchNewsCallback(callback) {
-    const newsUrl = `https://${config.news.baseUrl}/posts`;
-    httpsGet(newsUrl, (error, data) => {
-        if (error) {
-            callback(error);
-            return;
-        }
-        try {
-            const newsData = JSON.parse(data);
-            callback(null, newsData);
-        }
-        catch (parseError) {
-            callback(parseError);
-        }
-    });
+    apiClient_1.newsClient.get(config_1.config.newsUrl())
+        .then(response => callback(null, response.data))
+        .catch(error => callback(error));
 }
 function fetchDataWithCallbackHell() {
-    console.log('=== CALLBACK HELL DEMONSTRATION ===');
-    fetchWeatherCallback(40.7128, -74.0060, (weatherError, weather) => {
+    logger_1.logger.header('CALLBACK HELL DEMONSTRATION');
+    fetchWeatherCallback(config_1.config.lat, config_1.config.lon, (weatherError, weather) => {
         if (weatherError) {
-            console.error('Weather Error:', weatherError.message);
+            logger_1.logger.error(`Weather Error: ${weatherError.message}`);
             return;
         }
-        console.log('Weather data received');
-        console.log(`  Location: ${weather.timezone}`);
-        console.log(`  Temperature: ${weather.current.temp}°C`);
-        console.log(`  Condition: ${weather.current.weather[0].description}`);
+        logger_1.logger.success('Weather data received');
+        logger_1.logger.weather(`Location: ${weather.timezone}`);
+        logger_1.logger.weather(`Temperature: ${weather.current.temp}°C`);
+        logger_1.logger.weather(`Condition: ${weather.current.weather[0].description}`);
         // Nested callback for news
         fetchNewsCallback((newsError, news) => {
             if (newsError) {
-                console.error('News Error:', newsError.message);
+                logger_1.logger.error(`News Error: ${newsError.message}`);
                 return;
             }
-            console.log('✓ News data received');
-            console.log(`  Total posts: ${news.posts.length}`);
-            console.log('  Latest headlines:');
-            news.posts.slice(0, 3).forEach((post, index) => {
-                console.log(`    ${index + 1}. ${post.title}`);
+            logger_1.logger.success('News data received');
+            const articles = news.results || [];
+            logger_1.logger.news(`Total Articles: ${articles.length}`);
+            logger_1.logger.info('Latest headlines:');
+            articles.slice(0, 3).forEach((article, index) => {
+                logger_1.logger.news(`  ${index + 1}. ${article.title}`);
             });
-            console.log('\n✓ All data fetched successfully!');
-            console.log('=== END CALLBACK HELL DEMONSTRATION ===\n');
+            logger_1.logger.success('All data fetched successfully!');
+            logger_1.logger.divider();
         });
     });
 }
 function sequentialCallbacks() {
-    console.log('=== SEQUENTIAL CALLBACKS ===');
-    fetchWeatherCallback(40.7128, -74.0060, (weatherError, weather) => {
+    logger_1.logger.header('SEQUENTIAL CALLBACKS');
+    fetchWeatherCallback(config_1.config.lat, config_1.config.lon, (weatherError, weather) => {
         if (weatherError) {
-            console.error('Failed to fetch weather:', weatherError.message);
+            logger_1.logger.error(`Failed to fetch weather: ${weatherError.message}`);
         }
         else {
-            console.log('Weather:', weather.current.temp + '°C');
+            logger_1.logger.weather(`Weather: ${weather.current.temp}°C`);
         }
         fetchNewsCallback((newsError, news) => {
             if (newsError) {
-                console.error('Failed to fetch news:', newsError.message);
+                logger_1.logger.error(`Failed to fetch news: ${newsError.message}`);
             }
             else {
-                console.log('News count:', news.posts.length);
+                const articles = news.results || [];
+                logger_1.logger.news(`News count: ${articles.length}`);
             }
-            console.log('=== END SEQUENTIAL CALLBACKS ===\n');
+            logger_1.logger.divider();
         });
     });
 }
 if (require.main === module) {
-    console.log('🚀 Starting Callback Version...\n');
+    logger_1.logger.info('Starting Callback Version...');
     sequentialCallbacks();
     setTimeout(() => {
         fetchDataWithCallbackHell();

@@ -67,12 +67,12 @@ function httpsGet(url) {
 }
 // Fetch weather data using Promises
 function fetchWeatherPromise(lat, lon) {
-    const weatherUrl = `https://${config.weather.baseUrl}/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${config.weather.apiKey}&units=metric`;
+    const weatherUrl = `${config.weather.baseUrl}/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${config.weather.apiKey}&units=metric`;
     return httpsGet(weatherUrl).then((data) => JSON.parse(data));
 }
 // Fetch news data using Promises
 function fetchNewsPromise() {
-    const newsUrl = `https://${config.news.baseUrl}/api/1/news?apikey=${config.news.apiKey}&country=us`;
+    const newsUrl = `${config.news.baseUrl}/api/1/news?apikey=${config.news.apiKey}&country=us`;
     return httpsGet(newsUrl).then((data) => JSON.parse(data));
 }
 // Sequentially fetching data with Promises

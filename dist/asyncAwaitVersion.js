@@ -66,13 +66,13 @@ function httpsGetPromise(url) {
 }
 // Fetch weather data
 async function fetchWeatherAsync(lat, lon) {
-    const weatherUrl = `https://${config.weather.baseUrl}/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${config.weather.apiKey}&units=metric`;
+    const weatherUrl = `${config.weather.baseUrl}/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${config.weather.apiKey}&units=metric`;
     const data = await httpsGetPromise(weatherUrl);
     return JSON.parse(data);
 }
 // Fetch news data
 async function fetchNewsAsync() {
-    const newsUrl = `https://${config.news.baseUrl}/posts`;
+    const newsUrl = `${config.news.baseUrl}/posts`;
     const data = await httpsGetPromise(newsUrl);
     return JSON.parse(data);
 }

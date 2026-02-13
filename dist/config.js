@@ -1,11 +1,20 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.config = void 0;
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 exports.config = {
-    lat: "-26.2041",
-    lon: "28.0473",
+    lat: process.env.LAT || "-26.2041",
+    lon: process.env.LON || "28.0473",
+    weatherApiKey: process.env.OPENWEATHER_API_KEY || "",
+    newsApiKey: process.env.NEWSDATA_API_KEY || "",
     weatherUrl(lat, lon) {
-        return `https://home.openweathermap.org//v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+        return `/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${this.weatherApiKey}&units=metric`;
     },
-    newsUrl: "https://newsdata.io//posts?limit=5"
+    newsUrl() {
+        return `/posts?apikey=${this.newsApiKey}`;
+    }
 };

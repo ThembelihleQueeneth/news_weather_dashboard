@@ -37,14 +37,14 @@ function httpsGetPromise(url: string): Promise<string> {
 
 // Fetch weather data
 async function fetchWeatherAsync(lat: number, lon: number): Promise<WeatherData> {
-  const weatherUrl = `https://${config.weather.baseUrl}/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${config.weather.apiKey}&units=metric`;
+  const weatherUrl = `${config.weather.baseUrl}/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${config.weather.apiKey}&units=metric`;
   const data = await httpsGetPromise(weatherUrl);
   return JSON.parse(data) as WeatherData;
 }
 
 // Fetch news data
 async function fetchNewsAsync(): Promise<NewsData> {
-  const newsUrl = `https://${config.news.baseUrl}/posts`;
+  const newsUrl = `${config.news.baseUrl}/posts`;
   const data = await httpsGetPromise(newsUrl);
   return JSON.parse(data) as NewsData;
 }
@@ -52,13 +52,13 @@ async function fetchNewsAsync(): Promise<NewsData> {
 // Sequential execution with async/await
 async function sequentialAsyncAwait(): Promise<void> {
   console.log('=== SEQUENTIAL ASYNC/AWAIT ===');
-  
+
   try {
     const weather = await fetchWeatherAsync(40.7128, -74.0060);
     console.log(' Weather data received');
     console.log(`  Temperature: ${weather.current.temp}°C`);
     console.log(`  Condition: ${weather.current.weather[0].description}`);
-    
+
     const news = await fetchNewsAsync();
     console.log('  News data received');
     console.log(`  Total posts: ${news.posts.length}`);
@@ -66,7 +66,7 @@ async function sequentialAsyncAwait(): Promise<void> {
     news.posts.slice(0, 3).forEach((post, index) => {
       console.log(`    ${index + 1}. ${post.title}`);
     });
-    
+
   } catch (error) {
     console.error('Error in sequential execution:', (error as Error).message);
   } finally {
@@ -77,17 +77,17 @@ async function sequentialAsyncAwait(): Promise<void> {
 // Parallel execution with Promise.all and async/await
 async function parallelAsyncAwait(): Promise<void> {
   console.log('=== PARALLEL ASYNC/AWAIT ===');
-  
+
   try {
     const [weather, news] = await Promise.all([
       fetchWeatherAsync(40.7128, -74.0060),
       fetchNewsAsync()
     ]);
-    
+
     console.log('✓ All data fetched in parallel!');
     console.log(`  Weather: ${weather.current.temp}°C`);
     console.log(`  News posts: ${news.posts.length}`);
-    
+
   } catch (error) {
     console.error('Error in parallel execution:', (error as Error).message);
   } finally {
@@ -98,7 +98,7 @@ async function parallelAsyncAwait(): Promise<void> {
 // Using Promise.race with async/await
 async function raceAsyncAwait(): Promise<void> {
   console.log('=== PROMISE.RACE WITH ASYNC/AWAIT ===');
-  
+
   try {
     const result = await Promise.race([
       fetchWeatherAsync(40.7128, -74.0060),
@@ -107,14 +107,14 @@ async function raceAsyncAwait(): Promise<void> {
         setTimeout(() => reject(new Error('Timeout after 2 seconds')), 2000);
       })
     ]);
-    
+
     console.log('✓ Fastest response received!');
     if ('current' in (result as any)) {
       console.log('  Weather data arrived first');
     } else if ('posts' in (result as any)) {
       console.log('  News data arrived first');
     }
-    
+
   } catch (error) {
     console.error('Error in race:', (error as Error).message);
   } finally {
@@ -125,7 +125,7 @@ async function raceAsyncAwait(): Promise<void> {
 // Error handling with try-catch
 async function errorHandlingDemo(): Promise<void> {
   console.log('=== ERROR HANDLING DEMO ===');
-  
+
   try {
     // Simulate an error by using invalid coordinates
     const weather = await fetchWeatherAsync(999, 999);
@@ -134,13 +134,13 @@ async function errorHandlingDemo(): Promise<void> {
     console.log('✓ Error properly caught:');
     console.log(`  ${(error as Error).message}`);
   }
-  
+
   console.log('=== END ERROR HANDLING DEMO ===\n');
 }
 
 async function main(): Promise<void> {
   console.log('🚀 Starting Async/Await Version...\n');
-  
+
   await sequentialAsyncAwait();
   await parallelAsyncAwait();
   await raceAsyncAwait();
